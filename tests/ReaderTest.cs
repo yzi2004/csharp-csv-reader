@@ -375,6 +375,145 @@ namespace CSVTestSuite
             Assert.AreEqual(desiredLines, outputLines);
         }
 
+        [Test]
+        public void TestEmptyHeaderRow()
+        {
+            var settings = new CSVSettings()
+            {
+                LineSeparator = "\n",
+                FieldDelimiter = ',',
+                HeaderRowIncluded = true
+            };
+
+            using (var cr = CSVReader.FromString("", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString(" ", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual(" ", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("\t", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("\t", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("\n", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString(" \n", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual(" ", cr.Headers[0]);
+            }
+
+            using (var cr = CSVReader.FromString("\n ", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                var lines = cr.ToArray();
+                Assert.AreEqual(1, lines.Length);
+                Assert.AreEqual(1, lines[0].Length);
+                Assert.AreEqual(" ", lines[0][0]);
+            }
+        }
+
+        [Test]
+        public void TestSepLineEmptyHeaderRow()
+        {
+            var settings = new CSVSettings()
+            {
+                LineSeparator = "\n",
+                FieldDelimiter = ',',
+                HeaderRowIncluded = true,
+                AllowSepLine = true
+            };
+
+            // if without an = sign, "sep" is just a header
+            using (var cr = CSVReader.FromString("sep", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            // if with an = sign but no character specified, then "sep=" is also treated as a header
+            // note that this is different from Excel's behaviour
+            // Excel interprets this as a field delimiter setter, but it doesn't set it to any character
+            // so all lines end up getting displayed in plaintext
+            using (var cr = CSVReader.FromString("sep=", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep=", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("sep= ", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep= ", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("sep = ", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep = ", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("sep=;", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("sep=\n\nline1,line2", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep=", cr.Headers[0]);
+                var lines = cr.ToArray();
+                Assert.AreEqual(2, lines.Length);
+                Assert.AreEqual(1, lines[0].Length);
+                Assert.AreEqual("", lines[0][0]);
+                Assert.AreEqual(2, lines[1].Length);
+                Assert.AreEqual("line1", lines[1][0]);
+                Assert.AreEqual("line2", lines[1][1]);
+            }
+
+            using (var cr = CSVReader.FromString("sep=;\n\nline1;line2", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                var lines = cr.ToArray();
+                Assert.AreEqual(1, lines.Length);
+                Assert.AreEqual(2, lines[0].Length);
+                Assert.AreEqual("line1", lines[0][0]);
+                Assert.AreEqual("line2", lines[0][1]);
+            }
+
+            using (var cr = CSVReader.FromString("sep=\n", settings))
+            {
+                Assert.AreEqual(1, cr.Headers.Length);
+                Assert.AreEqual("sep=", cr.Headers[0]);
+                Assert.AreEqual(0, cr.Count());
+            }
+
+            using (var cr = CSVReader.FromString("sep=;\n", settings))
+            {
+                Assert.AreEqual(0, cr.Headers.Length);
+                Assert.AreEqual(0, cr.Count());
+            }
+        }
+
 #if HAS_ASYNC_IENUM
         [Test]
         public async Task TestAsyncReader()

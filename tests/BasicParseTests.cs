@@ -185,6 +185,8 @@ namespace CSVTestSuite
             Assert.AreEqual(',', CSV.ParseSepLine("sep=,"));
             Assert.AreEqual(',', CSV.ParseSepLine("sep = ,"));
             Assert.AreEqual(null, CSV.ParseSepLine("sep="));
+            Assert.AreEqual(null, CSV.ParseSepLine("sep=   "));
+            Assert.AreEqual(null, CSV.ParseSepLine("sep    =   "));
             Assert.Throws<Exception>(() =>
             {
                 CSV.ParseSepLine("sep= this is a test since separators can't be more than a single character");

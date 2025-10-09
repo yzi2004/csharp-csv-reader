@@ -334,7 +334,7 @@ namespace CSVFile
             if (_settings.HeaderRowIncluded)
             {
                 var line = source.ReadLine();
-                if (_settings.AllowSepLine)
+                if (line != null && _settings.AllowSepLine)
                 {
                     var newDelimiter = CSV.ParseSepLine(line);
                     if (newDelimiter != null)
@@ -345,7 +345,7 @@ namespace CSVFile
                     }
                 }
 
-                Headers = CSV.ParseLine(line, _settings);
+                Headers = CSV.ParseLine(line, _settings) ?? Array.Empty<string>();
             }
             else
             {
@@ -371,7 +371,7 @@ namespace CSVFile
             if (_settings.HeaderRowIncluded)
             {
                 var line = _stream.ReadLine();
-                if (_settings.AllowSepLine)
+                if (line != null && _settings.AllowSepLine)
                 {
                     var newDelimiter = CSV.ParseSepLine(line);
                     if (newDelimiter != null)
@@ -382,7 +382,7 @@ namespace CSVFile
                     }
                 }
 
-                Headers = CSV.ParseLine(line, _settings);
+                Headers = CSV.ParseLine(line, _settings) ?? Array.Empty<string>();
             }
             else
             {
